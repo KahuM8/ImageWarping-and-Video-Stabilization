@@ -1,5 +1,5 @@
 ﻿  Source.cpp
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(113,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(114,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -8,7 +8,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(113,46): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(112,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(113,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -17,8 +17,8 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(112,68): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(143,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(163,47): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(144,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(164,47): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -27,7 +27,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(163,47): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(162,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(163,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -36,7 +36,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(162,68): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(190,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(191,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -45,7 +45,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(190,46): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(189,67): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(190,67): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -55,8 +55,8 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(189,67): warning 
               _Tp=float
           ]
   Generating code
-  3 of 257 functions ( 1.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    8 functions had inline decision re-evaluated but remain unchanged
+  36 of 233 functions (15.5%) were compiled, the rest were copied from previous compilation.
+    24 functions were new in current compilation
+    50 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Assignment4.vcxproj -> C:\Users\kahum\source\repos\Assignment4\x64\Release\Assignment4.exe

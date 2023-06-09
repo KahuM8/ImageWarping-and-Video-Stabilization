@@ -12,9 +12,10 @@ using namespace std;
 int main()
 {
 	Assignment A = Assignment();
-	A.core1();
-	A.core2();
-	A.core3();
+//	A.core1();
+//	A.core2();
+//	A.core3();
+	A.compleation();
 }
 
 void Assignment::core1()
@@ -25,7 +26,7 @@ void Assignment::core1()
 
 	// Create a SIFT object and detect keypoints
 	Ptr<SIFT> sift = SIFT::create();
-	std::vector<KeyPoint> keypoints_1, keypoints_2;
+	vector<KeyPoint> keypoints_1, keypoints_2;
 	Mat descriptors_1, descriptors_2;
 
 	sift->detectAndCompute(img1, noArray(), keypoints_1, descriptors_1);
@@ -33,12 +34,12 @@ void Assignment::core1()
 
 	// Perform feature matching
 	BFMatcher matcher(NORM_L2, true);
-	std::vector<DMatch> matches;
+	vector<DMatch> matches;
 	matcher.match(descriptors_1, descriptors_2, matches);
 
 	// Filter the matches based on distance
 	double max_dist = 500;
-	std::vector<DMatch> good_matches;
+	vector<DMatch> good_matches;
 
 	for (int i = 0; i < matches.size(); i++) {
 		if (matches[i].distance < max_dist) {
@@ -77,7 +78,7 @@ void Assignment::core2() {
 
 
 	Ptr<SIFT> sift = SIFT::create();
-	std::vector<KeyPoint> keypoints_1, keypoints_2;
+	vector<KeyPoint> keypoints_1, keypoints_2;
 	Mat descriptors_1, descriptors_2;
 
 	sift->detectAndCompute(img1, noArray(), keypoints_1, descriptors_1);
@@ -85,7 +86,7 @@ void Assignment::core2() {
 
 	// Perform feature matching
 	BFMatcher matcher(NORM_L2, true);
-	std::vector<DMatch> matches;
+	vector<DMatch> matches;
 	matcher.match(descriptors_1, descriptors_2, matches);
 
 	// Set RANSAC parameters
@@ -128,16 +129,16 @@ void Assignment::core2() {
 }
 
 
-Mat Assignment::estimateHomography(const std::vector<KeyPoint>& keypoints_1, const std::vector<KeyPoint>& keypoints_2,
-	const std::vector<DMatch>& matches, double epsilon, int numIterations) {
+Mat Assignment::estimateHomography(const vector<KeyPoint>& keypoints_1, const vector<KeyPoint>& keypoints_2,
+	const vector<DMatch>& matches, double epsilon, int numIterations) {
 	Mat bestHomography;
 	int maxInliers = 0;
 
 	for (int iteration = 0; iteration < numIterations; iteration++) {
 		// Select four random feature pairs
-		std::vector<Point2f> srcPts;
-		std::vector<Point2f> dstPts;
-		std::vector<DMatch> randomMatches;
+		vector<Point2f> srcPts;
+		vector<Point2f> dstPts;
+		vector<DMatch> randomMatches;
 
 		for (int i = 0; i < 4; i++) {
 			int randomIdx = theRNG().uniform(0, matches.size());
@@ -177,8 +178,8 @@ Mat Assignment::estimateHomography(const std::vector<KeyPoint>& keypoints_1, con
 	}
 
 	// Re-compute homography estimation on the largest set of inliers
-	std::vector<Point2f> inlierSrcPts;
-	std::vector<Point2f> inlierDstPts;
+	vector<Point2f> inlierSrcPts;
+	vector<Point2f> inlierDstPts;
 
 	for (const DMatch& match : matches) {
 		Point2f srcPt = keypoints_1[match.queryIdx].pt;
@@ -269,4 +270,43 @@ void  Assignment::core3() {
 	imshow("Stitched", stitched);
 	waitKey(0);
 	destroyAllWindows();
+}
+
+
+void Assignment::compleation() {
+	vector<Mat> images = loadImages(5, "C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame");
+
+	//show each image
+	for (int i = 0; i < images.size(); i++)
+	{
+		imshow("Image " + to_string(i), images[i]);
+	}
+
+	exportImages(images, "Stable", "C:/Users/kahum/source/repos/Assignment4/Assignment4/outImgs");
+
+	waitKey(0);
+	
+}
+
+vector<Mat> Assignment::loadImages(int numFrames, const string& prefix) {
+	vector<Mat> images;
+	for (int i = 0; i < numFrames; i++) {
+		ostringstream frameNumber;
+		frameNumber << setfill('0') << setw(3) << i;
+		string filename = prefix + frameNumber.str() + ".jpg";
+		Mat image = imread(filename);
+		images.push_back(image);
+	}
+
+	return images;
+}
+
+
+void Assignment::exportImages(const vector<Mat>& images, const string& prefix, const string& outputFolder) {
+	for (int i = 0; i < images.size(); i++) {
+		ostringstream frameNumber;
+		frameNumber << setw(3) << setfill('0') << i;
+		string filename = outputFolder + "/" + prefix + frameNumber.str() + ".png";
+		imwrite(filename, images[i]);
+	}
 }
