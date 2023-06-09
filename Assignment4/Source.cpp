@@ -274,13 +274,46 @@ void  Assignment::core3() {
 
 
 void Assignment::compleation() {
+	//load frames
 	vector<Mat> images = loadImages(5, "C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame");
+		//TODO
+		//generate vector of matrix differences between frames(movement performed between each frame, sift and ransac)
+		
+	
+	
+	
+	
+		//TODO
+		//generate vector of cumulative matrices(prev * current or current * prev, forgor order of combination)
+		
+		
+		
+		
+		//TODO
+		//generate array / vector for 1D gaussian
+	
+		
+		
+		
+		//TODO
+		//create vector of cumulative matrices with gaussian smoothing(average between transforms to get a smooth result)
+		
+	
+	
+	
+	
+	
+		//TODO
+		//create vector of stabilisation matrices by getting movement and subtracting smooth(rough * inverse(smooth) or again vice versa, brain is off forgot order of matrix combo)
+		
+	
+	
+	
+	
+		//TODO
+		//apply stablisation transforms to each frame
 
-	//show each image
-	for (int i = 0; i < images.size(); i++)
-	{
-		imshow("Image " + to_string(i), images[i]);
-	}
+
 
 	exportImages(images, "Stable", "C:/Users/kahum/source/repos/Assignment4/Assignment4/outImgs");
 
