@@ -1,0 +1,57 @@
+﻿  Source.cpp
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(111,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=double
+          ]
+          and
+          [
+              _Tp=float
+          ]
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(110,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=double
+          ]
+          and
+          [
+              _Tp=float
+          ]
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(141,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(161,47): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=double
+          ]
+          and
+          [
+              _Tp=float
+          ]
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(160,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=double
+          ]
+          and
+          [
+              _Tp=float
+          ]
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(188,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=double
+          ]
+          and
+          [
+              _Tp=float
+          ]
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(187,67): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+          with
+          [
+              _Tp=double
+          ]
+          and
+          [
+              _Tp=float
+          ]
+LINK : fatal error LNK1104: cannot open file 'opencv_world470d.lib'
