@@ -1,9 +1,10 @@
 //include open cv
+#define _USE_MATH_DEFINES
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d.hpp>
 #include "Header.h"
 #include <iostream>
-
+#include <math.h>
 
 using namespace cv;
 using namespace std;
@@ -12,17 +13,20 @@ using namespace std;
 int main()
 {
 	Assignment A = Assignment();
-//	A.core1();
-//	A.core2();
-//	A.core3();
+	Mat img1 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame039.jpg");
+	Mat img2 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame041.jpg");
+
+	//A.core1(img1, img2);
+	//waitKey(0);
+	//A.core2(img1, img2);
+	//waitKey(0);
+	//A.core3(img1, img2);
+	//waitKey(0);
 	A.compleation();
 }
 
-void Assignment::core1()
+Mat Assignment::core1(Mat img1, Mat img2)
 {
-	//read images
-	Mat img1 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame039.jpg");
-	Mat img2 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame041.jpg");
 
 	// Create a SIFT object and detect keypoints
 	Ptr<SIFT> sift = SIFT::create();
@@ -38,7 +42,7 @@ void Assignment::core1()
 	matcher.match(descriptors_1, descriptors_2, matches);
 
 	// Filter the matches based on distance
-	double max_dist = 500;
+	double max_dist = 400;
 	vector<DMatch> good_matches;
 
 	for (int i = 0; i < matches.size(); i++) {
@@ -56,9 +60,12 @@ void Assignment::core1()
 	Mat img_matches;
 	vconcat(img_keypoints_1, img_keypoints_2, img_matches);
 
+	vector<Point2f> matchedPoints1, matchedPoints2;
 	for (int i = 0; i < good_matches.size(); i++) {
 		Point2f pt1 = keypoints_1[good_matches[i].queryIdx].pt;
 		Point2f pt2 = keypoints_2[good_matches[i].trainIdx].pt;
+		matchedPoints1.push_back(pt1);
+		matchedPoints2.push_back(pt2);
 
 		line(img_matches, pt1, Point2f(pt2.x, pt2.y + img1.rows), Scalar(0, 255, 0), 1);
 	}
@@ -66,15 +73,16 @@ void Assignment::core1()
 	// Display the result
 	namedWindow("Matches", WINDOW_NORMAL);
 	imshow("Matches", img_matches);
-	waitKey(0);
 
+	Mat homography = findHomography(matchedPoints1, matchedPoints2, RANSAC);
+
+	//return 
+	return homography;
 }
 
 
-void Assignment::core2() {
+Mat Assignment::core2(Mat img1, Mat img2) {
 
-	Mat img1 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame039.jpg");
-	Mat img2 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame041.jpg");
 
 
 	Ptr<SIFT> sift = SIFT::create();
@@ -125,7 +133,10 @@ void Assignment::core2() {
 
 	// Display the result
 	imshow("Matches", concatenatedImg);
-	waitKey(0);
+
+
+	//return
+	return homography;
 }
 
 
@@ -205,11 +216,8 @@ Mat Assignment::estimateHomography(const vector<KeyPoint>& keypoints_1, const ve
 }
 
 
-void  Assignment::core3() {
+void  Assignment::core3(Mat img1, Mat img2) {
 
-	// Load the images
-	Mat img1 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame039.jpg");
-	Mat img2 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame041.jpg");
 
 
 	// Convert the images to grayscale
@@ -245,11 +253,11 @@ void  Assignment::core3() {
 
 	//find homography
 	Mat H = findHomography(points1, points2, RANSAC);
-	
+
 
 	Mat warped1;
 	warpPerspective(padded1, warped1, H, padded1.size());
-	
+
 	//add the two images together
 	Mat stitched = Mat::zeros(padded1.size(), CV_8UC3);
 	warped1.copyTo(stitched);
@@ -264,61 +272,24 @@ void  Assignment::core3() {
 		}
 	}
 
-	
-	
+
+
 	//show the result
 	imshow("Stitched", stitched);
-	waitKey(0);
-	destroyAllWindows();
 }
 
 
 void Assignment::compleation() {
 	//load frames
-	vector<Mat> images = loadImages(5, "C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame");
-		//TODO
-		//generate vector of matrix differences between frames(movement performed between each frame, sift and ransac)
-		
-	
-	
-	
-	
-		//TODO
-		//generate vector of cumulative matrices(prev * current or current * prev, forgor order of combination)
-		
-		
-		
-		
-		//TODO
-		//generate array / vector for 1D gaussian
-	
-		
-		
-		
-		//TODO
-		//create vector of cumulative matrices with gaussian smoothing(average between transforms to get a smooth result)
-		
-	
-	
-	
-	
-	
-		//TODO
-		//create vector of stabilisation matrices by getting movement and subtracting smooth(rough * inverse(smooth) or again vice versa, brain is off forgot order of matrix combo)
-		
-	
-	
-	
-	
-		//TODO
-		//apply stablisation transforms to each frame
+	vector<Mat> images = loadImages(102, "C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame");
+	videoStabilization(images);
 
 
 
 	exportImages(images, "Stable", "C:/Users/kahum/source/repos/Assignment4/Assignment4/outImgs");
 
 	waitKey(0);
-	
+
 }
 
 vector<Mat> Assignment::loadImages(int numFrames, const string& prefix) {
@@ -341,5 +312,80 @@ void Assignment::exportImages(const vector<Mat>& images, const string& prefix, c
 		frameNumber << setw(3) << setfill('0') << i;
 		string filename = outputFolder + "/" + prefix + frameNumber.str() + ".png";
 		imwrite(filename, images[i]);
+	}
+}
+
+
+void Assignment::generate1DGaussian(double mean, double stddev, int size, vector<double>& gaussian)
+{
+	// Create the 1D Gaussian kernel
+	Mat kernel = getGaussianKernel(size, stddev, CV_64F);
+
+	// Convert the kernel to a vector of doubles
+	gaussian.resize(size);
+	for (int i = 0; i < size; ++i)
+	{
+		gaussian[i] = kernel.at<double>(i);
+	}
+}
+
+void Assignment::videoStabilization(vector<Mat>& frames)
+{
+	int numFrames = frames.size();
+
+	// Generate vector of matrix differences between frames (movement performed between each frame)
+	vector<Mat> differences(numFrames - 1);
+	for (int i = 0; i < numFrames - 1; ++i)
+	{
+		differences[i] = frames[i + 1] - frames[i];
+	}
+
+	// Generate vector of cumulative matrices
+	vector<Mat> cumulativeMatrices(numFrames);
+	cumulativeMatrices[0] = Mat::eye(3, 3, CV_64F);
+	for (int i = 1; i < numFrames; ++i)
+	{
+		Mat prevToCurrent;
+		Mat transformation = core1(frames[i], frames[i -1]);
+		prevToCurrent = transformation;  // Update to store the transformation matrix
+		cumulativeMatrices[i] = cumulativeMatrices[i - 1] * prevToCurrent;
+	}
+
+	// Generate 1D Gaussian filter
+	double mean = 0.;
+	double stddev = 5;
+	int filterSize = 9;  // Window size for the Gaussian filter
+	vector<double> gaussian;
+	generate1DGaussian(mean, stddev, filterSize, gaussian);
+
+	// Create vector of cumulative matrices with Gaussian smoothing
+	vector<Mat> smoothedMatrices(numFrames);
+	for (int i = 0; i < numFrames; ++i)
+	{
+		smoothedMatrices[i] = Mat::zeros(3, 3, CV_64F); //g transformation matrix
+		for (int j = -filterSize / 2; j <= filterSize / 2; ++j)
+		{
+			int index = i + j;
+			if (index >= 0 && index < numFrames)
+			{
+				double weight = gaussian[j + filterSize / 2];
+				smoothedMatrices[i] += weight * cumulativeMatrices[index];
+			}
+		}
+	}
+
+	// Create vector of stabilization matrices by getting movement and subtracting smooth
+	vector<Mat> stabilizationMatrices(numFrames);
+	for (int i = 0; i < numFrames; ++i)
+	{
+		stabilizationMatrices[i] = smoothedMatrices[i].inv() * cumulativeMatrices[i];
+	}
+
+	// Apply stabilization transforms to each frame
+	for (int i = 0; i < numFrames; ++i)
+	{
+		Mat stabilizedFrame;
+		warpPerspective(frames[i], stabilizedFrame, stabilizationMatrices[i], frames[i].size());
+		frames[i] = stabilizedFrame;
 	}
 }
