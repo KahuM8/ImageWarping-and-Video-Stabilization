@@ -16,13 +16,15 @@ int main()
 	Mat img1 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame039.jpg");
 	Mat img2 = imread("C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame041.jpg");
 
-	//A.core1(img1, img2);
-	//waitKey(0);
-	//A.core2(img1, img2);
-	//waitKey(0);
-	//A.core3(img1, img2);
-	//waitKey(0);
+	A.core1(img1, img2);
+	waitKey(0);
+	A.core2(img1, img2);
+	waitKey(0);
+	A.core3(img1, img2);
+	waitKey(0);
 	A.compleation();
+	cout << "done" << endl;
+	waitKey(0);
 }
 
 Mat Assignment::core1(Mat img1, Mat img2)
@@ -283,11 +285,7 @@ void Assignment::compleation() {
 	//load frames
 	vector<Mat> images = loadImages(102, "C:/Users/kahum/source/repos/Assignment4/Assignment4/res/Frame");
 	videoStabilization(images);
-
-
-
 	exportImages(images, "Stable", "C:/Users/kahum/source/repos/Assignment4/Assignment4/outImgs");
-
 	waitKey(0);
 
 }
@@ -320,8 +318,6 @@ void Assignment::generate1DGaussian(double mean, double stddev, int size, vector
 {
 	// Create the 1D Gaussian kernel
 	Mat kernel = getGaussianKernel(size, stddev, CV_64F);
-
-	// Convert the kernel to a vector of doubles
 	gaussian.resize(size);
 	for (int i = 0; i < size; ++i)
 	{
@@ -375,7 +371,7 @@ void Assignment::videoStabilization(vector<Mat>& frames)
 	}
 
 	// Create vector of stabilization matrices by getting movement and subtracting smooth
-	vector<Mat> stabilizationMatrices(numFrames);
+	stabilizationMatrices = vector<Mat>(numFrames);
 	for (int i = 0; i < numFrames; ++i)
 	{
 		stabilizationMatrices[i] = smoothedMatrices[i].inv() * cumulativeMatrices[i];
@@ -388,4 +384,35 @@ void Assignment::videoStabilization(vector<Mat>& frames)
 		warpPerspective(frames[i], stabilizedFrame, stabilizationMatrices[i], frames[i].size());
 		frames[i] = stabilizedFrame;
 	}
+	//minimum crop
+	minimumCrop(frames);
 }
+
+void Assignment::minimumCrop(vector<Mat>& frames)
+{
+	int numFrames = frames.size();
+	Mat cumulativeMask = Mat::ones(frames[0].size(), CV_8U);
+	for (int i = 0; i < numFrames; ++i)
+	{
+		Mat mask = Mat::ones(frames[i].size(), CV_8U);
+		warpPerspective(mask, mask, stabilizationMatrices[i], frames[i].size());
+		cumulativeMask &= mask;
+	}
+
+	// Find the bounding box of the non-zero pixels in the cumulative mask
+	vector<Point> points;
+	findNonZero(cumulativeMask, points);
+	Rect boundingBox = boundingRect(points);
+
+	// Crop all frames to the bounding box
+	for (int i = 0; i < numFrames; ++i)
+	{
+		frames[i] = frames[i](boundingBox);
+	}
+	
+	//export
+	exportImages(frames, "Crop", "C:/Users/kahum/source/repos/Assignment4/Assignment4/croped");
+}
+
+
+
