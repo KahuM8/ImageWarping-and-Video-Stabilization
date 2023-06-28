@@ -1,5 +1,6 @@
 ﻿  Source.cpp
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(124,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(139,2): error C3861: 'drawInliersOutliers': identifier not found
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(158,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -8,7 +9,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(124,46): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(123,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(157,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -17,8 +18,8 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(123,68): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(157,54): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(177,47): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(176,53): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(196,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -27,7 +28,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(177,47): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(176,68): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(195,67): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -36,7 +37,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(176,68): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(204,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(218,46): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -45,7 +46,7 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(204,46): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(203,67): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(217,67): warning C4244: 'argument': conversion from '_Tp' to '_Tp', possible loss of data
           with
           [
               _Tp=double
@@ -54,11 +55,9 @@ C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(203,67): warning 
           [
               _Tp=float
           ]
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(330,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(393,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  Generating code
-  1 of 501 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  Assignment4.vcxproj -> C:\Users\kahum\source\repos\Assignment4\x64\Release\Assignment4.exe
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(385,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(395,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(409,43): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(428,41): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(438,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\kahum\source\repos\Assignment4\Assignment4\Source.cpp(474,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data

@@ -27,39 +27,36 @@ int main()
 	waitKey(0);
 }
 
-Mat Assignment::core1(Mat img1, Mat img2)
-{
-
-	// Create a SIFT object and detect keypoints
+void Assignment::detectKeypoints(Mat img1, Mat img2, vector<KeyPoint>& keypoints_1, vector<KeyPoint>& keypoints_2, Mat& descriptors_1, Mat& descriptors_2) {
 	Ptr<SIFT> sift = SIFT::create();
-	vector<KeyPoint> keypoints_1, keypoints_2;
-	Mat descriptors_1, descriptors_2;
-
 	sift->detectAndCompute(img1, noArray(), keypoints_1, descriptors_1);
 	sift->detectAndCompute(img2, noArray(), keypoints_2, descriptors_2);
+}
 
-	// Perform feature matching
+// Perform feature matching
+void Assignment::matchFeatures(Mat descriptors_1, Mat descriptors_2, vector<DMatch>& matches) {
 	BFMatcher matcher(NORM_L2, true);
-	vector<DMatch> matches;
 	matcher.match(descriptors_1, descriptors_2, matches);
+}
 
-	// Filter the matches based on distance
+// Filter the matches based on distance
+void Assignment::filterMatches(vector<DMatch>& matches, vector<DMatch>& good_matches) {
 	double max_dist = 400;
-	vector<DMatch> good_matches;
-
 	for (int i = 0; i < matches.size(); i++) {
 		if (matches[i].distance < max_dist) {
 			good_matches.push_back(matches[i]);
 		}
 	}
+}
 
-	// Draw keypoints on the images
-	Mat img_keypoints_1, img_keypoints_2;
+// Draw keypoints on the images
+void drawKeypoints(Mat img1, Mat img2, vector<KeyPoint> keypoints_1, vector<KeyPoint> keypoints_2, Mat& img_keypoints_1, Mat& img_keypoints_2) {
 	drawKeypoints(img1, keypoints_1, img_keypoints_1, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
 	drawKeypoints(img2, keypoints_2, img_keypoints_2, Scalar::all(-1), DrawMatchesFlags::DEFAULT);
+}
 
-	// Draw lines between matched keypoints
-	Mat img_matches;
+// Draw lines between matched keypoints
+void Assignment::drawMatches(Mat img_keypoints_1, Mat img_keypoints_2, vector<KeyPoint> keypoints_1, vector<KeyPoint> keypoints_2, vector<DMatch> good_matches, Mat& img_matches) {
 	vconcat(img_keypoints_1, img_keypoints_2, img_matches);
 
 	vector<Point2f> matchedPoints1, matchedPoints2;
@@ -69,54 +66,91 @@ Mat Assignment::core1(Mat img1, Mat img2)
 		matchedPoints1.push_back(pt1);
 		matchedPoints2.push_back(pt2);
 
-		line(img_matches, pt1, Point2f(pt2.x, pt2.y + img1.rows), Scalar(0, 255, 0), 1);
+		line(img_matches, pt1, Point2f(pt2.x, pt2.y + img_keypoints_1.rows), Scalar(0, 255, 0), 1);
 	}
+}
 
-	// Display the result
-	namedWindow("Matches", WINDOW_NORMAL);
-	imshow("Matches", img_matches);
+// Find the homography matrix
+Mat findHomography(vector<KeyPoint> keypoints_1, vector<KeyPoint> keypoints_2, vector<DMatch> good_matches) {
+	vector<Point2f> matchedPoints1, matchedPoints2;
+	for (int i = 0; i < good_matches.size(); i++) {
+		Point2f pt1 = keypoints_1[good_matches[i].queryIdx].pt;
+		Point2f pt2 = keypoints_2[good_matches[i].trainIdx].pt;
+		matchedPoints1.push_back(pt1);
+		matchedPoints2.push_back(pt2);
+	}
 
 	Mat homography = findHomography(matchedPoints1, matchedPoints2, RANSAC);
 
-	//return 
 	return homography;
 }
 
+// Display the result
+void displayResult(Mat img_matches) {
+	namedWindow("Matches", WINDOW_NORMAL);
+	imshow("Matches", img_matches);
+}
 
-Mat Assignment::core2(Mat img1, Mat img2) {
-
-
-
-	Ptr<SIFT> sift = SIFT::create();
+Mat Assignment::core1(Mat img1, Mat img2)
+{
 	vector<KeyPoint> keypoints_1, keypoints_2;
 	Mat descriptors_1, descriptors_2;
 
-	sift->detectAndCompute(img1, noArray(), keypoints_1, descriptors_1);
-	sift->detectAndCompute(img2, noArray(), keypoints_2, descriptors_2);
+	detectKeypoints(img1, img2, keypoints_1, keypoints_2, descriptors_1, descriptors_2);
 
-	// Perform feature matching
-	BFMatcher matcher(NORM_L2, true);
 	vector<DMatch> matches;
-	matcher.match(descriptors_1, descriptors_2, matches);
+	matchFeatures(descriptors_1, descriptors_2, matches);
 
-	// Set RANSAC parameters
+	vector<DMatch> good_matches;
+	filterMatches(matches, good_matches);
+
+	Mat img_keypoints_1, img_keypoints_2;
+	drawKeypoints(img1, img2, keypoints_1, keypoints_2, img_keypoints_1, img_keypoints_2);
+
+	Mat img_matches;
+	drawMatches(img_keypoints_1, img_keypoints_2, keypoints_1, keypoints_2, good_matches, img_matches);
+
+	Mat homography = findHomography(keypoints_1, keypoints_2, good_matches);
+
+	displayResult(img_matches);
+
+	return homography;
+}
+
+Mat Assignment::core2(Mat img1, Mat img2) {
+
+	vector<KeyPoint> keypoints_1, keypoints_2;
+	Mat descriptors_1, descriptors_2;
+
+	detectKeypoints(img1, img2, keypoints_1, keypoints_2, descriptors_1, descriptors_2);
+
+	vector<DMatch> matches;
+	matchFeatures(descriptors_1, descriptors_2, matches);
+
 	double epsilon = 3.0; // Adjust this threshold as needed
 	int numIterations = 100;
 
-	// Estimate homography using RANSAC
 	Mat homography = estimateHomography(keypoints_1, keypoints_2, matches, epsilon, numIterations);
 
-	// Concatenate the two images
 	Mat concatenatedImg;
 	vconcat(img1, img2, concatenatedImg);
 
-	// Draw lines between inlier pairs and outlier pairs
+
+	drawInliersOutliers(concatenatedImg, keypoints_1, keypoints_2, matches, homography, epsilon);
+
+	displayResult(concatenatedImg);
+
+	return homography;
+}
+
+// Draw lines between inlier pairs and outlier pairs
+void drawInliersOutliers(Mat concatenatedImg, vector<KeyPoint> keypoints_1, vector<KeyPoint> keypoints_2, vector<DMatch> matches, Mat homography, double epsilon) {
 	for (const DMatch& match : matches) {
 		Point2f pt1 = keypoints_1[match.queryIdx].pt;
 		Point2f pt2 = keypoints_2[match.trainIdx].pt;
 
 		Point2f pt1Concatenated(pt1.x, pt1.y);
-		Point2f pt2Concatenated(pt2.x, pt2.y + img1.rows);
+		Point2f pt2Concatenated(pt2.x, pt2.y + concatenatedImg.rows);
 
 		Mat pt1Homogeneous = (Mat_<double>(3, 1) << pt1.x, pt1.y, 1);
 		Mat tranformedPt1Homogeneous = homography * pt1Homogeneous;
@@ -132,68 +166,48 @@ Mat Assignment::core2(Mat img1, Mat img2) {
 			line(concatenatedImg, pt1Concatenated, pt2Concatenated, Scalar(0, 0, 255), 1);
 		}
 	}
-
-	// Display the result
-	imshow("Matches", concatenatedImg);
-
-
-	//return
-	return homography;
 }
 
 
-Mat Assignment::estimateHomography(const vector<KeyPoint>& keypoints_1, const vector<KeyPoint>& keypoints_2,
-	const vector<DMatch>& matches, double epsilon, int numIterations) {
-	Mat bestHomography;
-	int maxInliers = 0;
+// Select four random feature pairs
+void selectRandomPairs(const vector<KeyPoint>& keypoints_1, const vector<KeyPoint>& keypoints_2,
+	const vector<DMatch>& matches, vector<Point2f>& srcPts, vector<Point2f>& dstPts, vector<DMatch>& randomMatches) {
+	for (int i = 0; i < 4; i++) {
+		int randomIdx = theRNG().uniform(0, matches.size());
+		randomMatches.push_back(matches[randomIdx]);
 
-	for (int iteration = 0; iteration < numIterations; iteration++) {
-		// Select four random feature pairs
-		vector<Point2f> srcPts;
-		vector<Point2f> dstPts;
-		vector<DMatch> randomMatches;
+		srcPts.push_back(keypoints_1[randomMatches[i].queryIdx].pt);
+		dstPts.push_back(keypoints_2[randomMatches[i].trainIdx].pt);
+	}
+}
 
-		for (int i = 0; i < 4; i++) {
-			int randomIdx = theRNG().uniform(0, matches.size());
-			randomMatches.push_back(matches[randomIdx]);
+// Count the number of inliers
+int countInliers(const vector<KeyPoint>& keypoints_1, const vector<KeyPoint>& keypoints_2,
+	const vector<DMatch>& matches, Mat homography, double epsilon) {
+	int numInliers = 0;
 
-			srcPts.push_back(keypoints_1[randomMatches[i].queryIdx].pt);
-			dstPts.push_back(keypoints_2[randomMatches[i].trainIdx].pt);
-		}
+	for (const DMatch& match : matches) {
+		Point2f srcPt = keypoints_1[match.queryIdx].pt;
+		Point2f dstPt = keypoints_2[match.trainIdx].pt;
 
-		// Compute the homography transform H for the selected pairs
-		Mat homography = findHomography(srcPts, dstPts, 0);
+		Mat srcPtHomogeneous = (Mat_<double>(3, 1) << srcPt.x, srcPt.y, 1.0);
+		Mat transformedPtHomogeneous = homography * srcPtHomogeneous;
+		Point2f transformedPt(transformedPtHomogeneous.at<double>(0, 0) / transformedPtHomogeneous.at<double>(2, 0),
+			transformedPtHomogeneous.at<double>(1, 0) / transformedPtHomogeneous.at<double>(2, 0));
 
-		// Count the number of inliers
-		int numInliers = 0;
+		double error = norm(transformedPt - dstPt);
 
-		for (const DMatch& match : matches) {
-			Point2f srcPt = keypoints_1[match.queryIdx].pt;
-			Point2f dstPt = keypoints_2[match.trainIdx].pt;
-
-			Mat srcPtHomogeneous = (Mat_<double>(3, 1) << srcPt.x, srcPt.y, 1.0);
-			Mat transformedPtHomogeneous = homography * srcPtHomogeneous;
-			Point2f transformedPt(transformedPtHomogeneous.at<double>(0, 0) / transformedPtHomogeneous.at<double>(2, 0),
-				transformedPtHomogeneous.at<double>(1, 0) / transformedPtHomogeneous.at<double>(2, 0));
-
-			double error = norm(transformedPt - dstPt);
-
-			if (error < epsilon) {
-				numInliers++;
-			}
-		}
-
-		// Update the best homography if the current iteration has more inliers
-		if (numInliers > maxInliers) {
-			maxInliers = numInliers;
-			bestHomography = homography;
+		if (error < epsilon) {
+			numInliers++;
 		}
 	}
 
-	// Re-compute homography estimation on the largest set of inliers
-	vector<Point2f> inlierSrcPts;
-	vector<Point2f> inlierDstPts;
+	return numInliers;
+}
 
+// Find the inlier feature pairs
+void findInliers(const vector<KeyPoint>& keypoints_1, const vector<KeyPoint>& keypoints_2,
+	const vector<DMatch>& matches, Mat bestHomography, double epsilon, vector<Point2f>& inlierSrcPts, vector<Point2f>& inlierDstPts) {
 	for (const DMatch& match : matches) {
 		Point2f srcPt = keypoints_1[match.queryIdx].pt;
 		Point2f dstPt = keypoints_2[match.trainIdx].pt;
@@ -210,58 +224,80 @@ Mat Assignment::estimateHomography(const vector<KeyPoint>& keypoints_1, const ve
 			inlierDstPts.push_back(dstPt);
 		}
 	}
+}
 
-	// Re-compute homography estimation on the largest set of inliers
-	Mat refinedHomography = findHomography(inlierSrcPts, inlierDstPts, 0);
+Mat Assignment::estimateHomography(const vector<KeyPoint>& keypoints_1, const vector<KeyPoint>& keypoints_2,
+	const vector<DMatch>& matches, double epsilon, int numIterations) {
+	Mat bestHomography;
+	int maxInliers = 0;
 
-	return refinedHomography;
+	for (int iteration = 0; iteration < numIterations; iteration++) {
+		vector<Point2f> srcPts;
+		vector<Point2f> dstPts;
+		vector<DMatch> randomMatches;
+
+		selectRandomPairs(keypoints_1, keypoints_2, matches, srcPts, dstPts, randomMatches);
+
+		Mat homography = findHomography(srcPts, dstPts, 0);
+
+		int numInliers = countInliers(keypoints_1, keypoints_2, matches, homography, epsilon);
+
+		if (numInliers > maxInliers) {
+			maxInliers = numInliers;
+			bestHomography = homography;
+		}
+	}
+
+	vector<Point2f> inlierSrcPts;
+	vector<Point2f> inlierDstPts;
+
+	findInliers(keypoints_1, keypoints_2, matches, bestHomography, epsilon, inlierSrcPts, inlierDstPts);
+
+	bestHomography = findHomography(inlierSrcPts, inlierDstPts, RANSAC);
+
+	return bestHomography;
 }
 
 
-void  Assignment::core3(Mat img1, Mat img2) {
-
-
-
-	// Convert the images to grayscale
-	Mat gray1, gray2;
+void convertToGrayscale(Mat img1, Mat img2, Mat& gray1, Mat& gray2) {
 	cvtColor(img1, gray1, COLOR_BGR2GRAY);
 	cvtColor(img2, gray2, COLOR_BGR2GRAY);
+}
 
-	// Detect keypoints and compute descriptors using ORB
-	vector<KeyPoint> keypoints1, keypoints2;
-	Mat descriptors1, descriptors2;
+// Detect keypoints and compute descriptors using ORB
+void detectAndComputeORB(Mat gray1, Mat gray2, vector<KeyPoint>& keypoints1, vector<KeyPoint>& keypoints2, Mat& descriptors1, Mat& descriptors2) {
 	Ptr<ORB> sift = ORB::create();
 	sift->detectAndCompute(gray1, noArray(), keypoints1, descriptors1);
 	sift->detectAndCompute(gray2, noArray(), keypoints2, descriptors2);
+}
 
-	// Match the descriptors using Brute-Force Matcher
+// Find the matched points using Brute-Force Matcher
+void findMatchedPoints(Mat descriptors1, Mat descriptors2, vector<KeyPoint> keypoints1, vector<KeyPoint> keypoints2, vector<Point2f>& points1, vector<Point2f>& points2) {
 	BFMatcher matcher(NORM_HAMMING);
 	vector<DMatch> matches;
 	matcher.match(descriptors1, descriptors2, matches);
 
-	// Find the homography matrix using RANSAC
-	vector<Point2f> points1, points2;
 	for (size_t i = 0; i < matches.size(); i++)
 	{
 		points1.push_back(keypoints1[matches[i].queryIdx].pt);
 		points2.push_back(keypoints2[matches[i].trainIdx].pt);
 	}
+}
 
-
-	//add 100px padding to each image
-	Mat padded1, padded2;
+// Add 100px padding to each image
+void addPadding(Mat img1, Mat img2, Mat& padded1, Mat& padded2) {
 	copyMakeBorder(img1, padded1, 100, 100, 100, 100, BORDER_CONSTANT, Scalar(0, 0, 0));
 	copyMakeBorder(img2, padded2, 100, 100, 100, 100, BORDER_CONSTANT, Scalar(0, 0, 0));
+}
 
-	//find homography
-	Mat H = findHomography(points1, points2, RANSAC);
-
-
-	Mat warped1;
+// Warp the first image using the homography matrix
+void warpImage(Mat padded1, Mat H, Mat& warped1) {
 	warpPerspective(padded1, warped1, H, padded1.size());
+}
 
-	//add the two images together
-	Mat stitched = Mat::zeros(padded1.size(), CV_8UC3);
+// Add the two images together
+void addImages(Mat warped1, Mat padded2, Mat& stitched) {
+	stitched = Mat::zeros(warped1.size(), CV_8UC3);
 	warped1.copyTo(stitched);
 	for (int y = 0; y < padded2.rows; y++)
 	{
@@ -273,13 +309,33 @@ void  Assignment::core3(Mat img1, Mat img2) {
 			}
 		}
 	}
-
-
-
-	//show the result
-	imshow("Stitched", stitched);
 }
 
+void Assignment::core3(Mat img1, Mat img2) {
+
+	Mat gray1, gray2;
+	convertToGrayscale(img1, img2, gray1, gray2);
+
+	vector<KeyPoint> keypoints1, keypoints2;
+	Mat descriptors1, descriptors2;
+	detectAndComputeORB(gray1, gray2, keypoints1, keypoints2, descriptors1, descriptors2);
+
+	vector<Point2f> points1, points2;
+	findMatchedPoints(descriptors1, descriptors2, keypoints1, keypoints2, points1, points2);
+
+	Mat padded1, padded2;
+	addPadding(img1, img2, padded1, padded2);
+
+	Mat H = findHomography(points1, points2, RANSAC);
+
+	Mat warped1;
+	warpImage(padded1, H, warped1);
+
+	Mat stitched;
+	addImages(warped1, padded2, stitched);
+
+	displayResult(stitched);
+}
 
 void Assignment::compleation() {
 	//load frames
@@ -317,45 +373,41 @@ void Assignment::exportImages(const vector<Mat>& images, const string& prefix, c
 void Assignment::generate1DGaussian(double mean, double stddev, int size, vector<double>& gaussian)
 {
 	// Create the 1D Gaussian kernel
-	Mat kernel = getGaussianKernel(size, stddev, CV_64F);
 	gaussian.resize(size);
+	Mat kernel = getGaussianKernel(size, stddev, CV_64F);
 	for (int i = 0; i < size; ++i)
 	{
 		gaussian[i] = kernel.at<double>(i);
 	}
 }
 
-void Assignment::videoStabilization(vector<Mat>& frames)
-{
+void generateDifferences(vector<Mat>& frames, vector<Mat>& differences) {
 	int numFrames = frames.size();
-
-	// Generate vector of matrix differences between frames (movement performed between each frame)
-	vector<Mat> differences(numFrames - 1);
+	differences.resize(numFrames - 1);
 	for (int i = 0; i < numFrames - 1; ++i)
 	{
 		differences[i] = frames[i + 1] - frames[i];
 	}
+}
 
-	// Generate vector of cumulative matrices
-	vector<Mat> cumulativeMatrices(numFrames);
+// Generate vector of cumulative matrices
+void Assignment::generateCumulativeMatrices(vector<Mat>& frames, vector<Mat>& cumulativeMatrices) {
+	int numFrames = frames.size();
+	cumulativeMatrices.resize(numFrames);
 	cumulativeMatrices[0] = Mat::eye(3, 3, CV_64F);
 	for (int i = 1; i < numFrames; ++i)
 	{
 		Mat prevToCurrent;
-		Mat transformation = core1(frames[i], frames[i -1]);
+		Mat transformation = core1(frames[i], frames[i - 1]);
 		prevToCurrent = transformation;  // Update to store the transformation matrix
 		cumulativeMatrices[i] = cumulativeMatrices[i - 1] * prevToCurrent;
 	}
+}
 
-	// Generate 1D Gaussian filter
-	double mean = 0.;
-	double stddev = 5;
-	int filterSize = 9;  // Window size for the Gaussian filter
-	vector<double> gaussian;
-	generate1DGaussian(mean, stddev, filterSize, gaussian);
-
-	// Create vector of cumulative matrices with Gaussian smoothing
-	vector<Mat> smoothedMatrices(numFrames);
+// Create vector of cumulative matrices with Gaussian smoothing
+void smoothCumulativeMatrices(vector<Mat>& cumulativeMatrices, vector<double>& gaussian, int filterSize, vector<Mat>& smoothedMatrices) {
+	int numFrames = cumulativeMatrices.size();
+	smoothedMatrices.resize(numFrames);
 	for (int i = 0; i < numFrames; ++i)
 	{
 		smoothedMatrices[i] = Mat::zeros(3, 3, CV_64F); //g transformation matrix
@@ -369,22 +421,51 @@ void Assignment::videoStabilization(vector<Mat>& frames)
 			}
 		}
 	}
+}
 
-	// Create vector of stabilization matrices by getting movement and subtracting smooth
-	stabilizationMatrices = vector<Mat>(numFrames);
+// Create vector of stabilization matrices by getting movement and subtracting smooth
+void generateStabilizationMatrices(vector<Mat>& smoothedMatrices, vector<Mat>& cumulativeMatrices, vector<Mat>& stabilizationMatrices) {
+	int numFrames = smoothedMatrices.size();
+	stabilizationMatrices.resize(numFrames);
 	for (int i = 0; i < numFrames; ++i)
 	{
 		stabilizationMatrices[i] = smoothedMatrices[i].inv() * cumulativeMatrices[i];
 	}
+}
 
-	// Apply stabilization transforms to each frame
+// Apply stabilization transforms to each frame
+void applyStabilization(vector<Mat>& frames, vector<Mat>& stabilizationMatrices) {
+	int numFrames = frames.size();
 	for (int i = 0; i < numFrames; ++i)
 	{
 		Mat stabilizedFrame;
 		warpPerspective(frames[i], stabilizedFrame, stabilizationMatrices[i], frames[i].size());
 		frames[i] = stabilizedFrame;
 	}
-	//minimum crop
+}
+
+void Assignment::videoStabilization(vector<Mat>& frames)
+{
+	vector<Mat> differences;
+	generateDifferences(frames, differences);
+
+	vector<Mat> cumulativeMatrices;
+	generateCumulativeMatrices(frames, cumulativeMatrices);
+
+	double mean = 0.;
+	double stddev = 5;
+	int filterSize = 9;  // Window size for the Gaussian filter
+	vector<double> gaussian;
+	generate1DGaussian(mean, stddev, filterSize, gaussian);
+
+	vector<Mat> smoothedMatrices;
+	smoothCumulativeMatrices(cumulativeMatrices, gaussian, filterSize, smoothedMatrices);
+
+	vector<Mat> stabilizationMatrices;
+	generateStabilizationMatrices(smoothedMatrices, cumulativeMatrices, stabilizationMatrices);
+
+	applyStabilization(frames, stabilizationMatrices);
+
 	minimumCrop(frames);
 }
 
